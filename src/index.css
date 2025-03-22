@@ -101,6 +101,23 @@
   .slide-up {
     animation-name: slide-up;
   }
+  
+  /* Player-specific styles */
+  .player-progress {
+    @apply w-full h-1 bg-secondary/50 relative overflow-hidden;
+  }
+  
+  .player-progress-bar {
+    @apply h-full bg-accent relative;
+    box-shadow: 0 0 8px var(--accent);
+    transition: width 0.1s linear;
+  }
+  
+  .player-progress-bar::after {
+    content: '';
+    @apply absolute right-0 top-0 h-full w-1 bg-accent/80 rounded-full;
+    box-shadow: 0 0 5px var(--accent);
+  }
 }
 
 /* Cute UI Animations */

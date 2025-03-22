@@ -10,6 +10,7 @@ interface ServerContextType {
   error: string | null;
   selectInstance: (instance: PipedInstance) => Promise<boolean>;
   refreshInstances: () => Promise<void>;
+  autoSelectBestInstance: () => Promise<boolean>;
 }
 
 const ServerContext = createContext<ServerContextType | undefined>(undefined);
@@ -22,21 +23,9 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Load instances on mount
   useEffect(() => {
-    loadInstances();
-  }, []);
-
-  // Try to restore selected instance from localStorage
-  useEffect(() => {
-    const savedInstance = localStorage.getItem("selectedInstance");
-    if (savedInstance) {
-      try {
-        const instance = JSON.parse(savedInstance);
-        selectInstance(instance);
-      } catch (err) {
-        console.error("Failed to parse saved instance", err);
-        localStorage.removeItem("selectedInstance");
-      }
-    }
+    loadInstances().then(() => {
+      autoSelectBestInstance();
+    });
   }, []);
 
   const loadInstances = async () => {
@@ -47,18 +36,12 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const loadedInstances = await apiClient.loadInstances();
       console.log("Loaded instances in context:", loadedInstances);
       setInstances(loadedInstances);
-      
-      // If no instance is selected, select the first one
-      if (!selectedInstance && loadedInstances.length > 0) {
-        const selected = apiClient.getSelectedInstance();
-        if (selected) {
-          setSelectedInstance(selected);
-        }
-      }
+      return loadedInstances;
     } catch (err) {
       console.error("Failed to load instances", err);
       setError("Failed to load server instances. Please try again later.");
       toast.error("Failed to load server instances");
+      return [];
     } finally {
       setIsLoading(false);
     }
@@ -86,6 +69,45 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const autoSelectBestInstance = async (): Promise<boolean> => {
+    // If there are no instances, try to load them
+    let availableInstances = instances;
+    if (availableInstances.length === 0) {
+      availableInstances = await loadInstances();
+    }
+    
+    if (availableInstances.length === 0) {
+      toast.error("No server instances available");
+      return false;
+    }
+    
+    // Sort instances by health (uptime) and latency
+    const sortedInstances = [...availableInstances].sort((a, b) => {
+      // First, prioritize by 24h uptime
+      if (b.uptime_24h !== a.uptime_24h) return b.uptime_24h - a.uptime_24h;
+      
+      // Then by 7d uptime
+      if (b.uptime_7d !== a.uptime_7d) return b.uptime_7d - a.uptime_7d;
+      
+      // Finally by latency if available
+      if (a.latency && b.latency) return a.latency - b.latency;
+      
+      return 0;
+    });
+    
+    // Try to connect to the best instance
+    for (const instance of sortedInstances) {
+      const success = await selectInstance(instance);
+      if (success) {
+        return true;
+      }
+      // If this instance failed, try the next one
+    }
+    
+    toast.error("Failed to connect to any server");
+    return false;
+  };
+
   const refreshInstances = async () => {
     setIsLoading(true);
     try {
@@ -107,6 +129,7 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         error,
         selectInstance,
         refreshInstances,
+        autoSelectBestInstance,
       }}
     >
       {children}

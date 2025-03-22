@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Song, PipedSongResponse, apiClient } from "@/services/api";
 import { toast } from "sonner";
+import { useServer } from "./ServerContext";
 
 interface PlayerContextType {
   currentSong: Song | null;
@@ -37,9 +38,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [volume, setVolumeState] = useState(0.7);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
+  const { instances, selectInstance } = useServer();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevVolumeRef = useRef(volume);
+  const currentSongRef = useRef<Song | null>(null);
 
   useEffect(() => {
     const audio = new Audio();
@@ -69,6 +73,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   useEffect(() => {
+    currentSongRef.current = currentSong;
+  }, [currentSong]);
+
+  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
       localStorage.setItem("playerVolume", volume.toString());
@@ -85,6 +93,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
       setIsLoading(false);
+      setRetryCount(0);
     }
   };
 
@@ -92,11 +101,51 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     playNext();
   };
 
-  const handleError = (e: Event) => {
+  const handleError = async (e: Event) => {
     console.error("Audio playback error:", e);
+    
+    if (retryCount >= 2) {
+      await tryAnotherServer();
+      return;
+    }
+    
+    setRetryCount(prevCount => prevCount + 1);
     setIsLoading(false);
-    toast.error("Error playing this track. Trying next song...");
-    playNext();
+    
+    if (currentSongRef.current) {
+      toast.error("Playback error. Retrying...");
+      await playSong(currentSongRef.current);
+    } else {
+      playNext();
+    }
+  };
+
+  const tryAnotherServer = async () => {
+    if (instances.length <= 1) {
+      toast.error("No alternative servers available");
+      setIsLoading(false);
+      return;
+    }
+    
+    const currentIndex = instances.findIndex(instance => 
+      instance.api_url === apiClient.getSelectedInstance()?.api_url
+    );
+    
+    const nextIndex = (currentIndex + 1) % instances.length;
+    const nextServer = instances[nextIndex];
+    
+    toast.info(`Switching to server: ${nextServer.name}`);
+    
+    const success = await selectInstance(nextServer);
+    if (success) {
+      setRetryCount(0);
+      
+      if (currentSongRef.current) {
+        await playSong(currentSongRef.current);
+      }
+    } else {
+      await tryAnotherServer();
+    }
   };
 
   const setVolume = (newVolume: number) => {
@@ -166,6 +215,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.error("Failed to play song:", error);
       toast.error("Failed to load this track");
       setIsLoading(false);
+      
+      await tryAnotherServer();
     }
   };
 

@@ -2,13 +2,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { SkipBack, SkipForward, Play, Pause, Volume2, VolumeX, ListMusic } from 'lucide-react';
+import { SkipBack, SkipForward, Play, Pause, Volume2, VolumeX, ListMusic, RefreshCw } from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
+import { useServer } from '@/context/ServerContext';
 import { formatTime } from '@/lib/utils';
 import Visualizer from './Visualizer';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TrackItem from './TrackItem';
+import { toast } from 'sonner';
 
 const MusicPlayer: React.FC = () => {
   const {
@@ -27,12 +29,15 @@ const MusicPlayer: React.FC = () => {
     playNext,
     playPrevious,
     removeFromQueue,
-    seek
+    seek,
+    playSong
   } = usePlayer();
 
+  const { autoSelectBestInstance, selectedInstance } = useServer();
   const [isVisualizerActive, setIsVisualizerActive] = useState(true);
   const [progressHover, setProgressHover] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
+  const [isSwitchingServer, setIsSwitchingServer] = useState(false);
   const progressContainerRef = useRef<HTMLDivElement>(null);
 
   // Update progress value when currentTime changes
@@ -63,6 +68,30 @@ const MusicPlayer: React.FC = () => {
   // Handle volume change
   const handleVolumeChange = (value: number[]) => {
     setVolume(value[0]);
+  };
+
+  // Handle manual server switch
+  const handleSwitchServer = async () => {
+    if (isSwitchingServer) return;
+    
+    setIsSwitchingServer(true);
+    toast.info("Attempting to find best server...");
+    
+    try {
+      const success = await autoSelectBestInstance();
+      if (success && currentSong) {
+        // Replay current song with new server
+        await playSong(currentSong);
+        toast.success("Server switched successfully");
+      } else {
+        toast.error("Failed to switch server");
+      }
+    } catch (error) {
+      console.error("Server switch error:", error);
+      toast.error("Server switch failed");
+    } finally {
+      setIsSwitchingServer(false);
+    }
   };
 
   // If no current song, render a minimal player
@@ -141,12 +170,28 @@ const MusicPlayer: React.FC = () => {
             >
               <SkipForward size={20} />
             </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-9 w-9 ${isSwitchingServer ? 'animate-spin' : ''}`}
+              onClick={handleSwitchServer}
+              disabled={isSwitchingServer}
+              title="Switch server"
+            >
+              <RefreshCw size={18} />
+            </Button>
           </div>
           
           <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
             <span>{formatCurrentTime}</span>
             <span>/</span>
             <span>{formatDuration}</span>
+            {selectedInstance && (
+              <span className="ml-2 text-accent/70 text-[10px]">
+                Server: {selectedInstance.name.trim()}
+              </span>
+            )}
           </div>
         </div>
         
