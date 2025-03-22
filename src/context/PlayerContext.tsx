@@ -193,7 +193,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const addToQueue = (song: Song) => {
-    setQueue([...queue, song]);
+    setQueue(prevQueue => [...prevQueue, song]);
     toast.success("Added to queue");
   };
 

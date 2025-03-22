@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useServer } from '@/context/ServerContext';
 import { apiClient, Song } from '@/services/api';
@@ -6,6 +7,7 @@ import MusicGrid from '@/components/MusicGrid';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Server, Headphones, Loader2 } from 'lucide-react';
+import ServerSelector from '@/components/ServerSelector';
 
 const featuredPlaylists = [
   "PLgzTt0k8mXzEk586ze4BjvDXR7c-TUSnx", // Top Hits
@@ -17,6 +19,7 @@ const Index = () => {
   const [featuredSongs, setFeaturedSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showServerSelector, setShowServerSelector] = useState(false);
   const { selectedInstance, isLoading: isServerLoading } = useServer();
   const navigate = useNavigate();
 
@@ -52,6 +55,11 @@ const Index = () => {
 
   return (
     <div className="container max-w-5xl animate-in fade-in slide-up">
+      {/* Background Blobs */}
+      <div className="blob blob-purple left-20 top-20"></div>
+      <div className="blob blob-blue right-20 top-60"></div>
+      <div className="blob blob-green left-40 bottom-20"></div>
+      
       {!selectedInstance && !isServerLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
           <Server size={64} className="text-accent mb-6" />
@@ -61,12 +69,16 @@ const Index = () => {
           </p>
           <Button 
             size="lg" 
-            className="gap-2"
-            onClick={() => navigate('/')}
+            className="gap-2 rounded-full shadow-lg hover:shadow-accent/20 transition-all"
+            onClick={() => setShowServerSelector(true)}
           >
             <Server size={20} />
             Select Server
           </Button>
+          
+          {showServerSelector && (
+            <ServerSelector onClose={() => setShowServerSelector(false)} />
+          )}
         </div>
       ) : (
         <>
@@ -80,11 +92,20 @@ const Index = () => {
                   Find your favorite tracks and sync playback with friends in real-time.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" onClick={goToSearch} className="gap-2">
+                  <Button 
+                    size="lg" 
+                    onClick={goToSearch} 
+                    className="gap-2 rounded-full shadow-lg hover:shadow-accent/20 transition-all"
+                  >
                     <Headphones size={18} />
                     Discover Music
                   </Button>
-                  <Button variant="outline" size="lg" onClick={() => navigate('/library')}>
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    onClick={() => navigate('/library')}
+                    className="rounded-full"
+                  >
                     My Library
                   </Button>
                 </div>
@@ -92,7 +113,7 @@ const Index = () => {
               <div className="flex-shrink-0 w-full lg:w-1/3">
                 <div className="relative">
                   <div className="device-float">
-                    <div className="glass-panel p-4 rounded-2xl overflow-hidden bg-accent/5">
+                    <div className="glass-panel p-4 rounded-2xl overflow-hidden bg-accent/5 shadow-lg">
                       <div className="rounded-lg overflow-hidden">
                         <img 
                           src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
@@ -136,7 +157,7 @@ const Index = () => {
           
           {/* Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="glass-panel p-6 flex flex-col items-center text-center">
+            <div className="glass-panel p-6 flex flex-col items-center text-center rounded-2xl hover:shadow-md transition-all">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
                 <Server size={24} className="text-accent" />
               </div>
@@ -146,7 +167,7 @@ const Index = () => {
               </p>
             </div>
             
-            <div className="glass-panel p-6 flex flex-col items-center text-center">
+            <div className="glass-panel p-6 flex flex-col items-center text-center rounded-2xl hover:shadow-md transition-all">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
                 <svg 
                   width="24" 
@@ -170,7 +191,7 @@ const Index = () => {
               </p>
             </div>
             
-            <div className="glass-panel p-6 flex flex-col items-center text-center">
+            <div className="glass-panel p-6 flex flex-col items-center text-center rounded-2xl hover:shadow-md transition-all">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
                 <svg 
                   width="24" 

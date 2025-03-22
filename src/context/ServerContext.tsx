@@ -45,6 +45,7 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     try {
       const loadedInstances = await apiClient.loadInstances();
+      console.log("Loaded instances in context:", loadedInstances);
       setInstances(loadedInstances);
       
       // If no instance is selected, select the first one
