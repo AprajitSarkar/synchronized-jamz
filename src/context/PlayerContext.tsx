@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Song, PipedSongResponse, apiClient } from "@/services/api";
 import { toast } from "sonner";
@@ -40,10 +41,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isMuted, setIsMuted] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   
-  const { instances, selectInstance } = useServer();
+  const { instances, selectInstance, autoSelectBestInstance } = useServer();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevVolumeRef = useRef(volume);
   const currentSongRef = useRef<Song | null>(null);
+  const loadAttemptRef = useRef(0);
 
   useEffect(() => {
     const audio = new Audio();
@@ -60,19 +62,56 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleMetadataLoaded);
+    audio.addEventListener("canplay", handleCanPlay);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("error", handleError);
+    audio.addEventListener("waiting", handleWaiting);
     
     return () => {
       audio.pause();
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleMetadataLoaded);
+      audio.removeEventListener("canplay", handleCanPlay);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
+      audio.removeEventListener("waiting", handleWaiting);
     };
   }, []);
 
+  // Load playback state from localStorage on mount
   useEffect(() => {
+    const lastSong = localStorage.getItem("lastSong");
+    if (lastSong) {
+      try {
+        const songData = JSON.parse(lastSong) as Song;
+        setCurrentSong(songData);
+        playSong(songData, false); // Load but don't auto-play
+      } catch (err) {
+        console.error("Failed to load last song:", err);
+      }
+    }
+    
+    const savedQueue = localStorage.getItem("queue");
+    if (savedQueue) {
+      try {
+        const queueData = JSON.parse(savedQueue) as Song[];
+        setQueue(queueData);
+      } catch (err) {
+        console.error("Failed to load queue:", err);
+      }
+    }
+  }, []);
+
+  // Save queue to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("queue", JSON.stringify(queue));
+  }, [queue]);
+
+  // Save current song to localStorage when it changes
+  useEffect(() => {
+    if (currentSong) {
+      localStorage.setItem("lastSong", JSON.stringify(currentSong));
+    }
     currentSongRef.current = currentSong;
   }, [currentSong]);
 
@@ -92,9 +131,17 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const handleMetadataLoaded = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
-      setIsLoading(false);
       setRetryCount(0);
+      loadAttemptRef.current = 0;
     }
+  };
+  
+  const handleCanPlay = () => {
+    setIsLoading(false);
+  };
+  
+  const handleWaiting = () => {
+    setIsLoading(true);
   };
 
   const handleEnded = () => {
@@ -110,7 +157,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
     
     setRetryCount(prevCount => prevCount + 1);
-    setIsLoading(false);
     
     if (currentSongRef.current) {
       toast.error("Playback error. Retrying...");
@@ -121,30 +167,27 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const tryAnotherServer = async () => {
+    setIsLoading(true);
+    
     if (instances.length <= 1) {
       toast.error("No alternative servers available");
       setIsLoading(false);
       return;
     }
     
-    const currentIndex = instances.findIndex(instance => 
-      instance.api_url === apiClient.getSelectedInstance()?.api_url
-    );
+    // Try to automatically select a better server
+    const success = await autoSelectBestInstance();
     
-    const nextIndex = (currentIndex + 1) % instances.length;
-    const nextServer = instances[nextIndex];
-    
-    toast.info(`Switching to server: ${nextServer.name}`);
-    
-    const success = await selectInstance(nextServer);
     if (success) {
       setRetryCount(0);
       
       if (currentSongRef.current) {
         await playSong(currentSongRef.current);
+        toast.success("Switched to a better server");
       }
     } else {
-      await tryAnotherServer();
+      toast.error("Failed to find a working server");
+      setIsLoading(false);
     }
   };
 
@@ -181,7 +224,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsPlaying(!isPlaying);
   };
 
-  const playSong = async (song: Song) => {
+  const playSong = async (song: Song, autoPlay = true) => {
     if (!song?.videoId) {
       toast.error("Invalid song");
       return;
@@ -189,6 +232,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     setIsLoading(true);
     setCurrentSong(song);
+    loadAttemptRef.current = 0;
     
     try {
       const details = await apiClient.getStreamDetails(song.videoId);
@@ -204,19 +248,33 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (audioRef.current) {
         audioRef.current.src = bestStream.url;
         audioRef.current.load();
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch(err => {
-          console.error("Play failed:", err);
-          toast.error("Failed to play this track");
-        });
+        
+        if (autoPlay) {
+          audioRef.current.play().then(() => {
+            setIsPlaying(true);
+          }).catch(err => {
+            console.error("Play failed:", err);
+            toast.error("Failed to play this track");
+            setIsLoading(false);
+          });
+        } else {
+          setIsLoading(false);
+        }
       }
     } catch (error) {
       console.error("Failed to play song:", error);
-      toast.error("Failed to load this track");
-      setIsLoading(false);
       
-      await tryAnotherServer();
+      // Increment load attempt counter
+      loadAttemptRef.current += 1;
+      
+      // If we've tried 3 times and failed, try another server
+      if (loadAttemptRef.current >= 3) {
+        toast.error("Failed to load track. Trying another server...");
+        await tryAnotherServer();
+      } else {
+        setIsLoading(false);
+        toast.error("Failed to load this track");
+      }
     }
   };
 

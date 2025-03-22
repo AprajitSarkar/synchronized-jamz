@@ -55,7 +55,7 @@ const TrackItem: React.FC<TrackItemProps> = ({
       )}
       onClick={handlePlay}
     >
-      <div className="flex-shrink-0 w-12 h-12 rounded overflow-hidden relative group">
+      <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded overflow-hidden relative group">
         <img 
           src={song.thumbnail} 
           alt={song.title} 
@@ -76,22 +76,22 @@ const TrackItem: React.FC<TrackItemProps> = ({
       
       <div className="ml-3 flex-1 min-w-0">
         <p className={cn(
-          "font-medium truncate",
+          "font-medium truncate text-sm md:text-base",
           isCurrentlyPlaying && "text-accent"
         )}>
           {song.title}
         </p>
-        <p className="text-sm text-muted-foreground truncate">{song.author}</p>
+        <p className="text-xs md:text-sm text-muted-foreground truncate">{song.author}</p>
       </div>
       
       <div className="flex items-center space-x-2 ml-2">
         {isInQueue && queueIndex !== undefined && (
-          <div className="text-sm text-muted-foreground px-2">
+          <div className="text-xs md:text-sm text-muted-foreground px-2">
             {queueIndex + 1}
           </div>
         )}
         
-        <div className="text-sm text-muted-foreground flex items-center space-x-1">
+        <div className="text-xs md:text-sm text-muted-foreground flex items-center space-x-1">
           <Clock size={14} />
           <span>{song.duration}</span>
         </div>
@@ -100,7 +100,7 @@ const TrackItem: React.FC<TrackItemProps> = ({
           <Button 
             size="icon" 
             variant="ghost" 
-            className="h-8 w-8 text-muted-foreground hover:text-destructive" 
+            className="h-7 w-7 md:h-8 md:w-8 text-muted-foreground hover:text-destructive" 
             onClick={handleRemoveFromQueue}
           >
             <X size={18} />
@@ -109,7 +109,7 @@ const TrackItem: React.FC<TrackItemProps> = ({
           <Button 
             size="icon" 
             variant="ghost" 
-            className="h-8 w-8" 
+            className="h-7 w-7 md:h-8 md:w-8" 
             onClick={handleAddToQueue}
           >
             <Plus size={18} />

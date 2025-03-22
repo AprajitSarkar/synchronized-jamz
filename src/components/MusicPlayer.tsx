@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { SkipBack, SkipForward, Play, Pause, Volume2, VolumeX, ListMusic, RefreshCw } from 'lucide-react';
+import { SkipBack, SkipForward, Play, Pause, Volume2, VolumeX, ListMusic, RefreshCw, Heart } from 'lucide-react';
 import { usePlayer } from '@/context/PlayerContext';
 import { useServer } from '@/context/ServerContext';
 import { formatTime } from '@/lib/utils';
@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TrackItem from './TrackItem';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MusicPlayer: React.FC = () => {
   const {
@@ -39,6 +40,7 @@ const MusicPlayer: React.FC = () => {
   const [progressValue, setProgressValue] = useState(0);
   const [isSwitchingServer, setIsSwitchingServer] = useState(false);
   const progressContainerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Update progress value when currentTime changes
   useEffect(() => {
@@ -108,7 +110,7 @@ const MusicPlayer: React.FC = () => {
       {/* Progress Bar */}
       <div 
         ref={progressContainerRef}
-        className="player-progress cursor-pointer" 
+        className="player-progress" 
         onClick={handleProgressClick}
         onMouseEnter={() => setProgressHover(true)}
         onMouseLeave={() => setProgressHover(false)}
@@ -123,10 +125,10 @@ const MusicPlayer: React.FC = () => {
         </div>
       )}
       
-      <div className="container flex items-center h-[72px] justify-between">
+      <div className="container flex flex-col md:flex-row items-center h-auto md:h-[72px] py-2 md:py-0">
         {/* Song Info */}
-        <div className="flex items-center space-x-3 w-1/3">
-          <div className="h-12 w-12 rounded overflow-hidden flex-shrink-0">
+        <div className="mobile-info mb-2 md:mb-0">
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded overflow-hidden flex-shrink-0">
             <img 
               src={currentSong.thumbnail || songDetails?.thumbnailUrl} 
               alt={currentSong.title}
@@ -134,13 +136,24 @@ const MusicPlayer: React.FC = () => {
             />
           </div>
           <div className="truncate">
-            <p className="font-medium truncate">{currentSong.title}</p>
-            <p className="text-sm text-muted-foreground truncate">{currentSong.author}</p>
+            <p className="font-medium truncate text-sm md:text-base">{currentSong.title}</p>
+            <p className="text-xs md:text-sm text-muted-foreground truncate">{currentSong.author}</p>
           </div>
+          
+          {/* Heart button for mobile */}
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="ml-auto h-8 w-8"
+            >
+              <Heart size={18} className="text-muted-foreground" />
+            </Button>
+          )}
         </div>
         
         {/* Controls */}
-        <div className="flex flex-col items-center w-1/3">
+        <div className="mobile-player-controls">
           <div className="flex items-center space-x-2">
             <Button 
               variant="ghost" 
@@ -196,8 +209,8 @@ const MusicPlayer: React.FC = () => {
         </div>
         
         {/* Volume & Queue */}
-        <div className="flex items-center justify-end space-x-3 w-1/3">
-          <div className="flex items-center space-x-2 w-32">
+        <div className="mobile-controls">
+          <div className="mobile-player-volume">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -216,6 +229,7 @@ const MusicPlayer: React.FC = () => {
             />
           </div>
           
+          {/* Queue button */}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -251,6 +265,17 @@ const MusicPlayer: React.FC = () => {
               </div>
             </SheetContent>
           </Sheet>
+          
+          {/* Heart button for desktop */}
+          {!isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 ml-2"
+            >
+              <Heart size={18} className="text-muted-foreground" />
+            </Button>
+          )}
         </div>
       </div>
     </div>

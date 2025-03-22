@@ -5,6 +5,7 @@ import Navigation from './Navigation';
 import MusicPlayer from './MusicPlayer';
 import { useServer } from '@/context/ServerContext';
 import ServerSelector from './ServerSelector';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { selectedInstance, isLoading } = useServer();
   const [showServerSelector, setShowServerSelector] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
   
   // Check if we need to show server selector on first load
   useEffect(() => {
@@ -50,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Main Content with Transitions */}
       <main 
-        className={`flex-1 px-4 py-6 md:px-8 md:py-10 animate-${transitionStage}`}
+        className={`flex-1 px-3 py-4 md:px-8 md:py-10 animate-${transitionStage} mb-[130px] md:mb-[90px]`}
         onAnimationEnd={handleAnimationEnd}
       >
         {transitioning ? (

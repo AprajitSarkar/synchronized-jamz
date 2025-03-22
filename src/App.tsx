@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Search from "./pages/Search";
 import Library from "./pages/Library";
 import NotFound from "./pages/NotFound";
+import Playlists from "./pages/Playlists";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient({
@@ -41,6 +42,8 @@ const App = () => {
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<Search />} />
                   <Route path="/library" element={<Library />} />
+                  <Route path="/playlists" element={<Playlists />} />
+                  <Route path="/playlists/:id" element={<Playlists />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Layout>
