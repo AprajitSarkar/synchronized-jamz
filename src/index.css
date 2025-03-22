@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,6 +7,47 @@
 
 @layer base {
   :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 311 70% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    --radius: 1.5rem;
+
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 243 75% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 311 70% 65%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 243 75% 59%;
+  }
+
+  .light {
     --background: 210 50% 98%;
     --foreground: 222 47% 11%;
 
@@ -25,7 +66,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 243 75% 59%;
+    --accent: 311 70% 65%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,8 +75,6 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-
-    --radius: 0.75rem;
 
     --sidebar-background: 210 50% 98%;
     --sidebar-foreground: 222 47% 11%;
@@ -46,50 +85,11 @@
     --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 222.2 84% 4.9%;
   }
-
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-
-    --card: 223 47% 11%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 223 47% 11%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 243 75% 59%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-
-    --sidebar-background: 222 47% 9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 243 75% 59%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 243 75% 59%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 223 47% 20%;
-    --sidebar-ring: 243 75% 59%;
-  }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border selection:bg-primary/20 selection:text-primary-foreground;
   }
 
   body {
@@ -100,11 +100,11 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-white/80 dark:bg-black/50 backdrop-blur-lg rounded-2xl border border-white/20 dark:border-white/10;
+    @apply bg-secondary/30 dark:bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 dark:border-white/5 shadow-xl;
   }
   
   .music-card {
-    @apply glass-panel transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    @apply glass-panel transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-primary/20;
   }
   
   .animate-in {
@@ -113,6 +113,21 @@
   
   .animate-out {
     @apply animate-fade-out;
+  }
+
+  .cute-button {
+    @apply rounded-full px-6 py-3 font-medium transition-all 
+    hover:shadow-lg hover:shadow-primary/20 active:scale-95;
+  }
+
+  .cute-icon-button {
+    @apply rounded-full p-3 transition-all 
+    hover:shadow-lg hover:shadow-primary/20 active:scale-95;
+  }
+
+  .cute-card {
+    @apply rounded-3xl p-5 transition-all shadow-lg border-2 border-accent/10
+    hover:shadow-xl hover:shadow-accent/10 hover:-translate-y-1;
   }
 }
 
@@ -138,12 +153,12 @@
 }
 
 .audio-bar {
-  @apply w-1 bg-primary rounded-t-sm;
+  @apply w-1 bg-primary rounded-t-full;
   transition: height 0.2s ease;
 }
 
 .player-progress {
-  @apply relative w-full h-1 bg-secondary rounded-full overflow-hidden cursor-pointer;
+  @apply relative w-full h-2 bg-secondary rounded-full overflow-hidden cursor-pointer;
 }
 
 .player-progress-bar {
@@ -190,4 +205,26 @@
   opacity: 0;
   transform: translateY(-10px);
   transition: opacity 300ms, transform 300ms;
+}
+
+/* Cute UI elements */
+.cute-blob {
+  border-radius: 71% 29% 52% 48% / 37% 44% 56% 63%;
+  animation: morph 8s ease-in-out infinite both alternate;
+}
+
+@keyframes morph {
+  0% {
+    border-radius: 71% 29% 52% 48% / 37% 44% 56% 63%;
+  }
+  50% {
+    border-radius: 43% 57% 34% 66% / 63% 30% 70% 37%;
+  }
+  100% {
+    border-radius: 35% 65% 70% 30% / 57% 43% 57% 43%;
+  }
+}
+
+.cute-shadow {
+  box-shadow: 0 10px 50px -10px rgba(79, 70, 229, 0.3);
 }

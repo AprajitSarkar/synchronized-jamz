@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useServer } from '@/context/ServerContext';
 import { apiClient, Song } from '@/services/api';
@@ -6,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import MusicGrid from '@/components/MusicGrid';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
-import { ServerStack, Headphones, Loader2 } from 'lucide-react';
+import { Server, Headphones, Loader2 } from 'lucide-react';
 
 const featuredPlaylists = [
   "PLgzTt0k8mXzEk586ze4BjvDXR7c-TUSnx", // Top Hits
@@ -55,7 +54,7 @@ const Index = () => {
     <div className="container max-w-5xl animate-in fade-in slide-up">
       {!selectedInstance && !isServerLoading ? (
         <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
-          <ServerStack size={64} className="text-accent mb-6" />
+          <Server size={64} className="text-accent mb-6" />
           <h1 className="text-4xl font-bold mb-3">Welcome to VibeSync</h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-lg">
             Synchronized music playback across multiple devices. Select a server to get started.
@@ -65,7 +64,7 @@ const Index = () => {
             className="gap-2"
             onClick={() => navigate('/')}
           >
-            <ServerStack size={20} />
+            <Server size={20} />
             Select Server
           </Button>
         </div>
@@ -139,7 +138,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <div className="glass-panel p-6 flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
-                <ServerStack size={24} className="text-accent" />
+                <Server size={24} className="text-accent" />
               </div>
               <h3 className="text-lg font-medium mb-2">Dynamic Servers</h3>
               <p className="text-muted-foreground">

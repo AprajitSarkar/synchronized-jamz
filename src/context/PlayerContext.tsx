@@ -22,7 +22,7 @@ interface PlayerContextType {
   clearQueue: () => void;
   removeFromQueue: (index: number) => void;
   seek: (time: number) => void;
-  setQueue: (songs: Song[]) => void;
+  updateQueue: (songs: Song[]) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -41,12 +41,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevVolumeRef = useRef(volume);
 
-  // Initialize audio element
   useEffect(() => {
     const audio = new Audio();
     audioRef.current = audio;
     
-    // Restore volume from localStorage
     const savedVolume = localStorage.getItem("playerVolume");
     if (savedVolume) {
       const parsedVolume = parseFloat(savedVolume);
@@ -56,7 +54,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       audio.volume = volume;
     }
     
-    // Set up event listeners
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleMetadataLoaded);
     audio.addEventListener("ended", handleEnded);
@@ -71,7 +68,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  // Save volume to localStorage when it changes
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
@@ -79,7 +75,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [volume]);
 
-  // Event handlers
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime);
@@ -104,7 +99,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     playNext();
   };
 
-  // Player controls
   const setVolume = (newVolume: number) => {
     if (isMuted && newVolume > 0) {
       setIsMuted(false);
@@ -155,7 +149,6 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error("No audio streams available");
       }
       
-      // Sort by bitrate and select the highest quality stream
       const sortedStreams = [...details.audioStreams].sort((a, b) => b.bitrate - a.bitrate);
       const bestStream = sortedStreams[0];
       
@@ -191,13 +184,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const playPrevious = () => {
     if (!currentSong || !audioRef.current) return;
     
-    // If we're more than 3 seconds into the song, restart it
     if (audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0;
       return;
     }
     
-    // Otherwise, we need history functionality which can be added later
     audioRef.current.currentTime = 0;
   };
 
@@ -223,9 +214,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const setQueue = (songs: Song[]) => {
+  const updateQueue = (songs: Song[]) => {
     setQueue(songs);
-  }
+  };
 
   return (
     <PlayerContext.Provider
@@ -249,7 +240,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         clearQueue,
         removeFromQueue,
         seek,
-        setQueue,
+        updateQueue,
       }}
     >
       {children}

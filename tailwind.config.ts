@@ -20,7 +20,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ["SF Pro Display", "system-ui", "sans-serif"],
+				sans: ["Quicksand", "system-ui", "sans-serif"],
 				mono: ["SF Mono", "monospace"],
 			},
 			colors: {
@@ -108,6 +108,14 @@ export default {
 					'50%': { transform: 'scaleY(0.8)' },
 					'75%': { transform: 'scaleY(0.4)' },
 					'100%': { transform: 'scaleY(1)' }
+				},
+				'bounce-light': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' }
+				},
+				'wiggle': {
+					'0%, 100%': { transform: 'rotate(-1deg)' },
+					'50%': { transform: 'rotate(1deg)' }
 				}
 			},
 			animation: {
@@ -120,7 +128,9 @@ export default {
 				'pulse-slow': 'pulse-slow 2s ease-in-out infinite',
 				'wave-1': 'wave 1.2s ease-in-out infinite',
 				'wave-2': 'wave 1.5s ease-in-out infinite',
-				'wave-3': 'wave 1.8s ease-in-out infinite'
+				'wave-3': 'wave 1.8s ease-in-out infinite',
+				'bounce-light': 'bounce-light 2s ease-in-out infinite',
+				'wiggle': 'wiggle 2s ease-in-out infinite'
 			},
 			backdropFilter: {
 				'none': 'none',

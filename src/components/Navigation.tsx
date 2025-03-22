@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, Search, Library, ServerStack } from 'lucide-react';
+import { Home, Search, Library, Server } from 'lucide-react';
 import { useServer } from '@/context/ServerContext';
 import { cn } from '@/lib/utils';
 
@@ -15,7 +14,6 @@ const Navigation: React.FC<NavigationProps> = ({ onServerSelect }) => {
   const { selectedInstance } = useServer();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Handle scrolling effect
   React.useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -37,7 +35,6 @@ const Navigation: React.FC<NavigationProps> = ({ onServerSelect }) => {
       )}
     >
       <div className="container flex h-16 items-center justify-between">
-        {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
           <div className="bg-accent w-8 h-8 rounded-lg flex items-center justify-center">
             <svg 
@@ -57,7 +54,6 @@ const Navigation: React.FC<NavigationProps> = ({ onServerSelect }) => {
           <span className="font-bold text-xl">VibeSync</span>
         </Link>
 
-        {/* Main Navigation */}
         <nav className="hidden md:flex items-center space-x-1">
           <Link to="/">
             <Button 
@@ -91,7 +87,6 @@ const Navigation: React.FC<NavigationProps> = ({ onServerSelect }) => {
           </Link>
         </nav>
 
-        {/* Server Info */}
         <div className="flex items-center space-x-3">
           <Button 
             variant="outline" 
@@ -99,7 +94,7 @@ const Navigation: React.FC<NavigationProps> = ({ onServerSelect }) => {
             className="gap-2 text-sm"
             onClick={onServerSelect}
           >
-            <ServerStack size={16} />
+            <Server size={16} />
             <span className="truncate max-w-[100px]">
               {selectedInstance ? selectedInstance.name : "Select Server"}
             </span>
@@ -107,7 +102,6 @@ const Navigation: React.FC<NavigationProps> = ({ onServerSelect }) => {
         </div>
       </div>
 
-      {/* Mobile Navigation Bar - Fixed at bottom */}
       <nav className="md:hidden fixed bottom-[72px] left-0 right-0 z-50 bg-background/90 backdrop-blur-lg border-t">
         <div className="flex justify-around items-center h-14">
           <Link to="/">
